@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025 NFL Rookie Stats Predictor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #013369;
+            --secondary: #D50A0A;
+            --accent: #FFC20E;
+            --light: #F5F5F5;
+            --dark: #333333;
+            --success: #28a745;
+            --qb: #4A90E2;
+            --rb: #7ED321;
+            --wr: #F5A623;
+            --te: #BD10E0;
+            --over: #7ED321;
+            --under: #E74C3C;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%);
+            transform: rotate(30deg);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .instructions {
+            background-color: white;
+            padding: 1.8rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid var(--accent);
+        }
+        
+        .instructions h2 {
+            color: var(--primary);
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instructions ul {
+            margin-left: 1.8rem;
+            margin-bottom: 1.2rem;
+        }
+        
+        .instructions li {
+            margin-bottom: 0.6rem;
+        }
+        
+        .position-section {
+            background-color: white;
+            padding: 1.8rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .position-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--light);
+        }
+        
+        .position-badge-large {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .badge-qb {
+            background-color: var(--qb);
+            color: white;
+        }
+        
+        .badge-rb {
+            background-color: var(--rb);
+        }
+        
+        .badge-wr {
+            background-color: var(--wr);
+        }
+        
+        .badge-te {
+            background-color: var(--te);
+            color: white;
+        }
+        
+        .prediction-grid {
+            display: grid;
+            grid-template-columns: 2fr repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .grid-header {
+            font-weight: 700;
+            padding: 14px;
+            background-color: var(--primary);
+            color: white;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            border-radius: 4px;
+        }
+        
+        .rookie-cell {
+            font-weight: 600;
+            padding: 14px;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 4px;
+        }
+        
+        .position-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .team-logo {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            background: var(--secondary);
+            color: white;
+            border-radius: 50%;
+        }
+        
+        .stat-cell {
+            padding: 6px;
+        }
+        
+        .stat-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .stat-value {
+            font-weight: 600;
+            color: var(--primary);
+            text-align: center;
+        }
+        
+        .over-under-select {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            width: 100%;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .over-option {
+            background-color: rgba(126, 211, 33, 0.1);
+            color: var(--over);
+        }
+        
+        .under-option {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--under);
+        }
+        
+        .form-section {
+            background-color: white;
+            padding: 2.2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-section h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.8rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(1, 51, 105, 0.2);
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2.5rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-submit {
+            background: linear-gradient(to right, var(--secondary), #ff2b2b);
+            color: white;
+        }
+        
+        .btn-submit:hover {
+            background: linear-gradient(to right, #b30808, #e00e0e);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-clear {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-clear:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-share {
+            background: linear-gradient(to right, var(--primary), #0155b7);
+            color: white;
+        }
+        
+        .btn-share:hover {
+            background: linear-gradient(to right, #01264e, #01428d);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-pdf {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        .btn-pdf:hover {
+            background: linear-gradient(to right, #c0392b, #a93226);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .comparison-section {
+            background-color: white;
+            padding: 2.2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        
+        .comparison-section h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--light);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1.5rem;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .success-message {
+            background-color: var(--success);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            display: none;
+        }
+        
+        .pdf-preview {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        
+        .pdf-preview h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--light);
+        }
+        
+        @media (max-width: 900px) {
+            .prediction-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .grid-header {
+                display: none;
+            }
+            
+            .rookie-cell {
+                background-color: var(--primary);
+                color: white;
+                justify-content: center;
+                margin-bottom: 1rem;
+            }
+            
+            .stat-cell {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                align-items: center;
+                gap: 0.8rem;
+                margin-bottom: 0.8rem;
+            }
+            
+            .stat-cell::before {
+                content: attr(data-label);
+                font-weight: 600;
+                text-align: right;
+                color: var(--primary);
+            }
+            
+            .user-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            header, .instructions, .form-section, .position-section {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>2025 NFL Rookie Stats Predictor</h1>
+            <p class="subtitle">Predict Over/Under on projected stats for the top 16 offensive rookies</p>
+        </header>
+        
+        <section class="instructions">
+            <h2><i class="fas fa-info-circle"></i> How It Works</h2>
+            <ul>
+                <li>Fill in your name and email address</li>
+                <li>For each rookie, select whether you think they'll go Over or Under their projected stats</li>
+                <li>Click "Submit Predictions" to save your entries</li>
+                <li>Share this form with your friends to collect their predictions</li>
+                <li>Save your predictions as a PDF to keep for reference</li>
+                <li>At the end of the season, compare your predictions with actual stats</li>
+            </ul>
+            <p><strong>Note:</strong> Rankings based on FantasyPros 2025 Dynasty Rookie Rankings</p>
+        </section>
+        
+        <section class="form-section">
+            <h2><i class="fas fa-edit"></i> Your Predictions</h2>
+            
+            <div class="success-message" id="success-message">
+                <i class="fas fa-check-circle"></i> Your predictions have been successfully submitted!
+            </div>
+            
+            <form id="prediction-form">
+                <div class="user-info">
+                    <div>
+                        <label for="name"><i class="fas fa-user"></i> Your Name</label>
+                        <input type="text" id="name" required placeholder="Enter your name">
+                    </div>
+                    <div>
+                        <label for="email"><i class="fas fa-envelope"></i> Your Email</label>
+                        <input type="email" id="email" required placeholder="Enter your email">
+                    </div>
+                </div>
+                
+                <!-- Quarterbacks Section -->
+                <div class="position-section">
+                    <div class="position-header">
+                        <span class="position-badge-large badge-qb">QB</span>
+                        <h3>Quarterbacks</h3>
+                    </div>
+                    
+                    <div class="prediction-grid">
+                        <div class="grid-header">Player</div>
+                        <div class="grid-header">Pass Yards</div>
+                        <div class="grid-header">Pass TDs</div>
+                        <div class="grid-header">INTs</div>
+                        <div class="grid-header">Rush Yards</div>
+                        
+                        <div class="rookie-cell">
+                            <span class="team-logo">TEN</span>
+                            <span class="position-badge badge-qb">QB</span>
+                            Cam Ward (TEN)
+                        </div>
+                        <div class="stat-cell" data-label="Pass Yards">
+                            <div class="stat-container">
+                                <div class="stat-value">3,200</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Pass TDs">
+                            <div class="stat-container">
+                                <div class="stat-value">20</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="INTs">
+                            <div class="stat-container">
+                                <div class="stat-value">12</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Rush Yards">
+                            <div class="stat-container">
+                                <div class="stat-value">350</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="rookie-cell">
+                            <span class="team-logo">NYG</span>
+                            <span class="position-badge badge-qb">QB</span>
+                            Jaxson Dart (NYG)
+                        </div>
+                        <div class="stat-cell" data-label="Pass Yards">
+                            <div class="stat-container">
+                                <div class="stat-value">2,950</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Pass TDs">
+                            <div class="stat-container">
+                                <div class="stat-value">18</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="INTs">
+                            <div class="stat-container">
+                                <div class="stat-value">10</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Rush Yards">
+                            <div class="stat-container">
+                                <div class="stat-value">300</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Running Backs Section -->
+                <div class="position-section">
+                    <div class="position-header">
+                        <span class="position-badge-large badge-rb">RB</span>
+                        <h3>Running Backs</h3>
+                    </div>
+                    
+                    <div class="prediction-grid">
+                        <div class="grid-header">Player</div>
+                        <div class="grid-header">Rush Yards</div>
+                        <div class="grid-header">Rush TDs</div>
+                        <div class="grid-header">YPC</div>
+                        <div class="grid-header">Receptions</div>
+                        
+                        <div class="rookie-cell">
+                            <span class="team-logo">LV</span>
+                            <span class="position-badge badge-rb">RB</span>
+                            Ashton Jeanty (LV)
+                        </div>
+                        <div class="stat-cell" data-label="Rush Yards">
+                            <div class="stat-container">
+                                <div class="stat-value">950</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Rush TDs">
+                            <div class="stat-container">
+                                <div class="stat-value">7</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="YPC">
+                            <div class="stat-container">
+                                <div class="stat-value">4.5</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Receptions">
+                            <div class="stat-container">
+                                <div class="stat-value">40</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="rookie-cell">
+                            <span class="team-logo">LAC</span>
+                            <span class="position-badge badge-rb">RB</span>
+                            Omarion Hampton (LAC)
+                        </div>
+                        <div class="stat-cell" data-label="Rush Yards">
+                            <div class="stat-container">
+                                <div class="stat-value">850</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Rush TDs">
+                            <div class="stat-container">
+                                <div class="stat-value">6</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="YPC">
+                            <div class="stat-container">
+                                <div class="stat-value">4.3</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Receptions">
+                            <div class="stat-container">
+                                <div class="stat-value">25</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Wide Receivers Section -->
+                <div class="position-section">
+                    <div class="position-header">
+                        <span class="position-badge-large badge-wr">WR</span>
+                        <h3>Wide Receivers</h3>
+                    </div>
+                    
+                    <div class="prediction-grid">
+                        <div class="grid-header">Player</div>
+                        <div class="grid-header">Rec Yards</div>
+                        <div class="grid-header">Rec TDs</div>
+                        <div class="grid-header">Receptions</div>
+                        <div class="grid-header">YPR</div>
+                        
+                        <div class="rookie-cell">
+                            <span class="team-logo">JAC</span>
+                            <span class="position-badge badge-wr">WR</span>
+                            Travis Hunter (JAC)
+                        </div>
+                        <div class="stat-cell" data-label="Rec Yards">
+                            <div class="stat-container">
+                                <div class="stat-value">900</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Rec TDs">
+                            <div class="stat-container">
+                                <div class="stat-value">6</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Receptions">
+                            <div class="stat-container">
+                                <div class="stat-value">65</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="YPR">
+                            <div class="stat-container">
+                                <div class="stat-value">13.8</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="rookie-cell">
+                            <span class="team-logo">CAR</span>
+                            <span class="position-badge badge-wr">WR</span>
+                            Tetairoa McMillan (CAR)
+                        </div>
+                        <div class="stat-cell" data-label="Rec Yards">
+                            <div class="stat-container">
+                                <div class="stat-value">850</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Rec TDs">
+                            <div class="stat-container">
+                                <div class="stat-value">5</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Receptions">
+                            <div class="stat-container">
+                                <div class="stat-value">60</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="YPR">
+                            <div class="stat-container">
+                                <div class="stat-value">14.2</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="rookie-cell">
+                            <span class="team-logo">TB</span>
+                            <span class="position-badge badge-wr">WR</span>
+                            Emeka Egbuka (TB)
+                        </div>
+                        <div class="stat-cell" data-label="Rec Yards">
+                            <div class="stat-container">
+                                <div class="stat-value">800</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Rec TDs">
+                            <div class="stat-container">
+                                <div class="stat-value">5</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Receptions">
+                            <div class="stat-container">
+                                <div class="stat-value">55</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="YPR">
+                            <div class="stat-container">
+                                <div class="stat-value">14.5</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="rookie-cell">
+                            <span class="team-logo">GB</span>
+                            <span class="position-badge badge-wr">WR</span>
+                            Matthew Golden (GB)
+                        </div>
+                        <div class="stat-cell" data-label="Rec Yards">
+                            <div class="stat-container">
+                                <div class="stat-value">750</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Rec TDs">
+                            <div class="stat-container">
+                                <div class="stat-value">4</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Receptions">
+                            <div class="stat-container">
+                                <div class="stat-value">50</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="YPR">
+                            <div class="stat-container">
+                                <div class="stat-value">15.0</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tight Ends Section -->
+                <div class="position-section">
+                    <div class="position-header">
+                        <span class="position-badge-large badge-te">TE</span>
+                        <h3>Tight Ends</h3>
+                    </div>
+                    
+                    <div class="prediction-grid">
+                        <div class="grid-header">Player</div>
+                        <div class="grid-header">Rec Yards</div>
+                        <div class="grid-header">Rec TDs</div>
+                        <div class="grid-header">Receptions</div>
+                        <div class="grid-header">YPR</div>
+                        
+                        <div class="rookie-cell">
+                            <span class="team-logo">CHI</span>
+                            <span class="position-badge badge-te">TE</span>
+                            Colston Loveland (CHI)
+                        </div>
+                        <div class="stat-cell" data-label="Rec Yards">
+                            <div class="stat-container">
+                                <div class="stat-value">600</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Rec TDs">
+                            <div class="stat-container">
+                                <div class="stat-value">4</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Receptions">
+                            <div class="stat-container">
+                                <div class="stat-value">45</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="YPR">
+                            <div class="stat-container">
+                                <div class="stat-value">13.3</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="rookie-cell">
+                            <span class="team-logo">IND</span>
+                            <span class="position-badge badge-te">TE</span>
+                            Tyler Warren (IND)
+                        </div>
+                        <div class="stat-cell" data-label="Rec Yards">
+                            <div class="stat-container">
+                                <div class="stat-value">500</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Rec TDs">
+                            <div class="stat-container">
+                                <div class="stat-value">3</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="Receptions">
+                            <div class="stat-container">
+                                <div class="stat-value">40</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="stat-cell" data-label="YPR">
+                            <div class="stat-container">
+                                <div class="stat-value">12.5</div>
+                                <select class="over-under-select">
+                                    <option value="">Select</option>
+                                    <option value="over" class="over-option">Over</option>
+                                    <option value="under" class="under-option">Under</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="buttons">
+                    <button type="button" class="btn-clear" id="clear-btn">
+                        <i class="fas fa-trash"></i> Clear Form
+                    </button>
+                    <button type="button" class="btn-share" id="share-btn">
+                        <i class="fas fa-share-alt"></i> Share
+                    </button>
+                    <button type="button" class="btn-pdf" id="pdf-btn">
+                        <i class="fas fa-file-pdf"></i> Save as PDF
+                    </button>
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-paper-plane"></i> Submit Predictions
+                    </button>
+                </div>
+            </form>
+        </section>
+        
+        <section class="pdf-preview" id="pdf-preview">
+            <h2><i class="fas fa-file-pdf"></i> PDF Preview</h2>
+            <div id="pdf-content">
+                <!-- PDF content will be generated here -->
+            </div>
+        </section>
+        
+        <section class="comparison-section" id="comparison-section">
+            <h2><i class="fas fa-chart-line"></i> Prediction Comparison</h2>
+            <p>This section will display at the end of the season when actual stats are available.</p>
+            <!-- Comparison table would be generated here -->
+        </section>
+        
+        <footer>
+            <p>2025 NFL Rookie Stats Predictor | Demo Version | Projections based on FantasyPros 2025 Dynasty Rookie Rankings</p>
+        </footer>
+    </div>
+
+    <script>
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('prediction-form');
+            const clearBtn = document.getElementById('clear-btn');
+            const shareBtn = document.getElementById('share-btn');
+            const pdfBtn = document.getElementById('pdf-btn');
+            const comparisonSection = document.getElementById('comparison-section');
+            const successMessage = document.getElementById('success-message');
+            const pdfPreview = document.getElementById('pdf-preview');
+            const pdfContent = document.getElementById('pdf-content');
+            
+            // Handle form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+                
+                // Show success message
+                successMessage.style.display = 'block';
+                
+                // Scroll to success message
+                successMessage.scrollIntoView({ behavior: 'smooth' });
+                
+                // Hide success message after 5 seconds
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 5000);
+                
+                // Show comparison section (in demo, just to show what it would look like)
+                comparisonSection.style.display = 'block';
+                comparisonSection.scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            // Clear form
+            clearBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to clear all your predictions?')) {
+                    form.reset();
+                }
+            });
+            
+            // Share functionality
+            shareBtn.addEventListener('click', function() {
+                const url = window.location.href;
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('Link copied to clipboard! Share this with your friends.');
+                }).catch(err => {
+                    alert('Failed to copy link. Please manually copy the URL from your browser.');
+                });
+            });
+            
+            // Generate PDF
+            pdfBtn.addEventListener('click', function() {
+                const name = document.getElementById('name').value || 'Your Name';
+                const email = document.getElementById('email').value || 'your.email@example.com';
+                
+                // Create PDF content
+                let pdfHTML = `
+                    <div style="padding: 20px; background: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+                        <h2 style="color: #013369; text-align: center; margin-bottom: 5px;">2025 NFL Rookie Predictions</h2>
+                        <p style="text-align: center; color: #666; margin-bottom: 20px;">Created by ${name} (${email})</p>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr style="background-color: #013369; color: white;">
+                                <th style="padding: 10px; text-align: left;">Player</th>
+                                <th style="padding: 10px; text-align: center;">Stat 1</th>
+                                <th style="padding: 10px; text-align: center;">Stat 2</th>
+                                <th style="padding: 10px; text-align: center;">Stat 3</th>
+                                <th style="padding: 10px; text-align: center;">Stat 4</th>
+                            </tr>
+                `;
+                
+                // Add each rookie's predictions
+                const rookieCells = document.querySelectorAll('.rookie-cell');
+                rookieCells.forEach((cell, index) => {
+                    const playerName = cell.textContent.trim();
+                    const selects = cell.parentElement.querySelectorAll('.over-under-select');
+                    
+                    const stat1 = selects[0].value || 'Not selected';
+                    const stat2 = selects[1].value || 'Not selected';
+                    const stat3 = selects[2].value || 'Not selected';
+                    const stat4 = selects[3].value || 'Not selected';
+                    
+                    pdfHTML += `
+                        <tr style="${index % 2 === 0 ? 'background-color: #f8f9fa;' : ''}">
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">${playerName}</td>
+                            <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">${stat1}</td>
+                            <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">${stat2}</td>
+                            <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">${stat3}</td>
+                            <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">${stat4}</td>
+                        </tr>
+                    `;
+                });
+                
+                pdfHTML += `
+                        </table>
+                        <p style="margin-top: 20px; color: #666; font-size: 14px; text-align: center;">
+                            Generated on ${new Date().toLocaleDateString()}
+                        </p>
+                    </div>
+                `;
+                
+                // Display preview
+                pdfContent.innerHTML = pdfHTML;
+                pdfPreview.style.display = 'block';
+                pdfPreview.scrollIntoView({ behavior: 'smooth' });
+                
+                // Generate actual PDF
+                const doc = new jsPDF();
+                doc.setFontSize(22);
+                doc.setTextColor(1, 51, 105);
+                doc.text('2025 NFL Rookie Predictions', 105, 20, { align: 'center' });
+                
+                doc.setFontSize(12);
+                doc.setTextColor(102, 102, 102);
+                doc.text(`Created by ${name} (${email})`, 105, 30, { align: 'center' });
+                
+                // Add table
+                doc.setFontSize(10);
+                doc.setTextColor(0, 0, 0);
+                
+                let y = 45;
+                doc.setFillColor(1, 51, 105);
+                doc.setTextColor(255, 255, 255);
+                doc.rect(10, y, 190, 10, 'F');
+                doc.text('Player', 15, y + 7);
+                doc.text('Stat 1', 60, y + 7, { align: 'center' });
+                doc.text('Stat 2', 100, y + 7, { align: 'center' });
+                doc.text('Stat 3', 140, y + 7, { align: 'center' });
+                doc.text('Stat 4', 180, y + 7, { align: 'center' });
+                
+                y += 10;
+                doc.setTextColor(0, 0, 0);
+                
+                rookieCells.forEach((cell, index) => {
+                    if (y > 250) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                    
+                    const playerName = cell.textContent.trim();
+                    const selects = cell.parentElement.querySelectorAll('.over-under-select');
+                    
+                    const stat1 = selects[0].value || 'Not selected';
+                    const stat2 = selects[1].value || 'Not selected';
+                    const stat3 = selects[2].value || 'Not selected';
+                    const stat4 = selects[3].value || 'Not selected';
+                    
+                    if (index % 2 === 0) {
+                        doc.setFillColor(240, 240, 240);
+                        doc.rect(10, y, 190, 10, 'F');
+                    }
+                    
+                    doc.text(playerName, 15, y + 7);
+                    doc.text(stat1, 60, y + 7, { align: 'center' });
+                    doc.text(stat2, 100, y + 7, { align: 'center' });
+                    doc.text(stat3, 140, y + 7, { align: 'center' });
+                    doc.text(stat4, 180, y + 7, { align: 'center' });
+                    
+                    y += 10;
+                });
+                
+                doc.setFontSize(10);
+                doc.setTextColor(102, 102, 102);
+                doc.text(`Generated on ${new Date().toLocaleDateString()}`, 105, 280, { align: 'center' });
+                
+                // Save the PDF
+                doc.save(`${name.replace(/\s+/g, '_')}_2025_Rookie_Predictions.pdf`);
+            });
+        });
+    </script>
+</body>
+</html>
